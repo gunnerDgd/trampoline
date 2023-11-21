@@ -18,23 +18,27 @@ bool_t
     __dns_res_init
         (__dns_res* par_res, u32_t par_count, va_list par) {
             par_res->dns = ref(va_arg(par, __dns*));
-            if (!par_res->dns)
-                return false_t;
+            
+            if (!par_res->dns)                                      return false_t            ;
+            if (!make_at(par_res->req, &__dns_name_trait) from (0)) goto __dns_res_init_failed;
+            if (null(par_res->ptr = par_res->dns->ptr_off))         goto __dns_res_init_failed;
 
-            par_res->ptr = par_res->dns->ptr_off;
-            if (ptr_same(par_res->ptr, ptr_null()))
-                goto __dns_res_init_failed;
-
-            par_res->form.name = par_res->ptr;
-            if (par_count == 1)              {
-                if (!make_at(par_res->req, &__dns_name_trait) from (1, par_res->dns))
+            if (par_count == 1)                             {
+                if (null(par_res->form.name = par_res->ptr))
                     goto __dns_res_init_failed;
-
-                par_res->form.type     = ptr_seek(par_res->form.name    , __dns_name_len(&par_res->req));
-                par_res->form.cls      = ptr_seek(par_res->form.type    , 2)                            ;
-                par_res->form.ttl      = ptr_seek(par_res->form.cls     , 2)                            ;
-                par_res->form.data_len = ptr_seek(par_res->form.ttl     , 4)                            ;
-                par_res->form.data     = ptr_seek(par_res->form.data_len, 2)                            ;
+                if (null(par_res->form.type     = ptr_seek(par_res->form.name    , __dns_res_name_len(par_res))))
+                    goto __dns_res_init_failed;
+                if (null(par_res->form.cls      = ptr_seek(par_res->form.type    , 2)))
+                    goto __dns_res_init_failed;
+                if (null(par_res->form.ttl      = ptr_seek(par_res->form.cls     , 2)))
+                    goto __dns_res_init_failed;
+                if (null(par_res->form.data_len = ptr_seek(par_res->form.ttl     , 4)))
+                    goto __dns_res_init_failed;
+                if (null(par_res->form.data     = ptr_seek(par_res->form.data_len, 2)))
+                    goto __dns_res_init_failed;
+                if (__dns_name_from_ptr(&par_res->req, par_res->form.name, par_res->dns->ptr))
+                    goto __dns_res_init_failed;
+                
 
                 u16_t res_len;
                 ptr_rd16(par_res->form.data_len, &res_len)                          ;
@@ -43,26 +47,31 @@ bool_t
                 return true_t;
             }
 
-            if(!make_at(par_res->req, &__dns_name_trait) from (2, par_res->dns, va_arg(par, str*)))
+            __dns_name* name = va_arg(par, __dns_name*);
+            if (null(par_res->form.name = par_res->ptr))                                                   
                 goto __dns_res_init_failed;
-
-            par_res->form.type     = ptr_seek(par_res->form.name    , __dns_name_len(&par_res->req));
-            par_res->form.cls      = ptr_seek(par_res->form.type    , 2)                            ;
-            par_res->form.ttl      = ptr_seek(par_res->form.cls     , 2)                            ;
-            par_res->form.data_len = ptr_seek(par_res->form.ttl     , 2)                            ;
-            par_res->form.data     = ptr_seek(par_res->form.data_len, 2)                            ;
+            if (null(par_res->form.type     = __dns_name_to_ptr(name, par_res->form.name, par_res->dns->ptr)))
+                goto __dns_res_init_failed;
+            if (null(par_res->form.cls      = ptr_seek(par_res->form.type, 2)))
+                goto __dns_res_init_failed;
+            if (null(par_res->form.ttl      = ptr_seek(par_res->form.cls, 2)))
+                goto __dns_res_init_failed;
+            if (null(par_res->form.data_len = ptr_seek(par_res->form.ttl, 4)))
+                goto __dns_res_init_failed;
+            if (null(par_res->form.data     = ptr_seek(par_res->form.data_len, 2)))
+                goto __dns_res_init_failed;
 
             ptr_wr16(par_res->form.type, be16(va_arg(par, u16_t)));
             ptr_wr16(par_res->form.cls , be16(va_arg(par, u16_t)));
             ptr_wr16(par_res->form.ttl , be16(va_arg(par, u16_t)));
 
-            u16_t res_data_len = va_arg(par, u16_t);
-            void *res_data     = va_arg(par, void*);
+            u16_t data_len = va_arg(par, u16_t);
+            void *data     = va_arg(par, void*);
 
-            ptr_wr16 (par_res->form.data_len, be16(res_data_len))    ;
-            ptr_write(par_res->form.data    , res_data, res_data_len);
+            ptr_wr16 (par_res->form.data_len,  be16(data_len));
+            ptr_write(par_res->form.data    , data, data_len) ;
 
-            par_res->dns->ptr_off = ptr_seek(par_res->form.data, res_data_len);
+            par_res->dns->ptr_off = ptr_seek(par_res->form.data, data_len);
             return true_t;
     __dns_res_init_failed:
             del(par_res->dns);
@@ -72,12 +81,12 @@ bool_t
 bool_t 
     __dns_res_init_as_clone
         (__dns_res* par, __dns_res* par_clone) {
+            return false_t;
 }
 
 void
     __dns_res_deinit
         (__dns_res* par)  {
-            del(&par->req);
             del (par->dns);
 }
 
@@ -88,34 +97,27 @@ u64_t
 
 str* 
     __dns_res_name
-        (__dns_res* par)             {
-            return name_of(&par->req);
+        (__dns_res* par)                       {
+            return __dns_name_to_str(&par->req);
 }
 
-u16_t
-    __dns_res_type
-        (__dns_res* par)                                   {
-            u16_t       ret; ptr_rd16(par->form.type, &ret);
-            return be16(ret);
-}
+u64_t  
+    __dns_res_name_len
+        (__dns_res* par)               {
+            ptr   name = par->form.name;
+            u8_t  len    ;
+            u64_t ret = 0;
 
-u16_t
-    __dns_res_cls
-        (__dns_res* par)                                  {
-            u16_t       ret; ptr_rd16(par->form.cls, &ret);
-            return be16(ret);
-}
+            name = ptr_rd8(name, &len);
+            while  (len)                      {
+                if (len & 0xC0) return ret + 2;
 
-u16_t
-    __dns_res_ttl
-        (__dns_res* par)                                  {
-            u16_t       ret; ptr_rd16(par->form.ttl, &ret);
-            return be16(ret);
-}
+                ret += len;
+                name = ptr_seek(name,  len);
+                name = ptr_rd8 (name, &len);
 
-u64_t
-    __dns_res_len
-        (__dns_res* par)                                    {
-            u16_t  ret; ptr_rd16(par->form.data_len, &ret)  ;
-            return be16(ret) + __dns_name_len(&par->req) + 8;
+                if (null(name)) return -1;
+            }
+
+            return ret + 1;
 }

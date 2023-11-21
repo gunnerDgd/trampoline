@@ -21,7 +21,6 @@ io_sched_main(par, par_sched)                          {
     box* dns_pkt     = dns_mem  (dns)       ;
     ptr  dns_pkt_ptr = box_ptr  (dns_pkt, 0);
 
-    printf("%d\n", dns_len(dns));
     task* snd = udp_send_to(udp, dns_pkt_ptr, dns_len(dns), udp_addr);
     await(snd);
 
@@ -31,12 +30,15 @@ io_sched_main(par, par_sched)                          {
 
     dns = make(dns_t) from (2, dns_pkt, 0);
     str* res = make(str_t) from(0);
-    dns_res_for(dns, res_it)                {
-        if (dns_res_as_a(get(res_it), res)) {
-            printf("%s\n", ptr_as(str_ptr(res), const char*));
+    dns_res_for(dns, res_it)                                         {
+        if (dns_res_as_a(get(res_it), res))                          {
+            printf("A : %s\n", ptr_as(str_ptr(res), const char*))    ;
         }
-        if (dns_res_as_cname(get(res_it), res)) {
-            printf("%s\n", ptr_as(str_ptr(res), const char*));
+        if (dns_res_as_cname(get(res_it), res))                      {
+            printf("CNAME : %s\n", ptr_as(str_ptr(res), const char*));
         }
+
+        del(res);
+        res = make(str_t) from(0);
     }
 }

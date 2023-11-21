@@ -6,7 +6,7 @@
 #include "it.h"
 
 extern obj_trait* dns_t;
-typedef struct    dns { u8_t dns[1024]; } dns;
+typedef struct    dns  { u8_t dns[1024]; } dns;
 
 u16_t dns_id       (dns*);
 u16_t dns_opcode   (dns*);
