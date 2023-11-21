@@ -92,7 +92,7 @@ u64_t
 }
 
 str*
-    dns_res_as_a
+    dns_res_data_as_a
         (obj* par)                                        {
             if (!par)                       return false_t;
             if (trait_of    (par) != res_t) return false_t;
@@ -119,11 +119,11 @@ str*
 }
 
 obj*
-    dns_res_as_cname
-        (obj* par)                                        {
-            if (!par)                       return false_t;
-            if (trait_of    (par) != res_t) return false_t;
-            if (dns_res_type(par) != 5)     return false_t;
+    dns_res_data_as_cname
+        (obj* par)                                   {
+            if (!par)                       return 0;
+            if (trait_of    (par) != res_t) return 0;
+            if (dns_res_type(par) != 5)     return 0;
 
             __dns_name *ret     = make(&__dns_name_trait) from(0);
             __dns_res  *ret_res = par;

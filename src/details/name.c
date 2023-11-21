@@ -55,18 +55,19 @@ bool_t
             if (null(tok) || null(tok_end))
                 return false_t;
 
-            while (!null(tok))                                                           {
-                if (null(tok_end)) tok_end = ptr_seek(str_ptr(par_str), str_len(par_str));
-
+            while (!null(tok_end))                               {
                 len     = ptr_dist(tok, tok_end)                 ;
                 str_push_back_cstr(&par->name, &len, 1)          ;
                 str_push_back_cstr(&par->name, ptr_raw(tok), len);
 
-                tok     = ptr_seek          (tok_end, 1)                             ;
-                tok_end = str_find_from_cstr(par_str, ptr_dist(tok, tok_end), ".", 1);
+                tok     = ptr_seek          (tok_end, 1)                                      ;
+                tok_end = str_find_from_cstr(par_str, ptr_dist(tok, str_ptr(par_str)), ".", 1);
             }
 
-            str_push_back_cstr(&par->name, "\0", 1);
+            len = str_len(par_str) - ptr_dist(tok, str_ptr(par_str));
+            str_push_back_cstr(&par->name, &len        , 1)  ;
+            str_push_back_cstr(&par->name, ptr_raw(tok), len);
+            str_push_back_cstr(&par->name, "\0"        , 1)  ;
             return true_t;
 }
 
@@ -80,7 +81,7 @@ bool_t
             while    (len)                                                                   {
                 while(len & 0xC0)                                                            {
                     if (null(ptr_rd16(par_ptr, &off)))                         return false_t;
-                    if (null(par_ptr = ptr_seek(par_ptr, be16(off) ^ 0xC000))) return false_t;
+                    if (null(par_ptr = ptr_seek(par_dns, be16(off) ^ 0xC000))) return false_t;
 
                     ptr_rd8(par_ptr, &len);
                 }
@@ -106,6 +107,7 @@ str*
                 return false_t;
             while (len)                                   {
                 str_push_back_cstr(str, ptr_raw(ptr), len);
+                str_push_back_cstr(str, "."         , 1)  ;
                 ptr = ptr_seek    (ptr,  len);
                 ptr = ptr_rd8     (ptr, &len);
                 
@@ -115,6 +117,7 @@ str*
                 }
             }
 
+            str_pop_back(str, 1);
             return str;
 }
 
@@ -133,8 +136,10 @@ ptr
                 if(!null(off))
                     return ptr_wr16(par_ptr, be16(ptr_dist(off, par_dns) | 0xC000));
 
-                tok = ptr_rd8 (tok, &len); ptr_copy(par_ptr, tok, len);
-                tok = ptr_seek(tok,  len);
+                tok     = ptr_rd8 (tok, &len)                           ; 
+                par_ptr = ptr_wr8 (par_ptr, len)                        ;
+                par_ptr = ptr_seek(par_ptr, ptr_copy(par_ptr, tok, len));
+                tok     = ptr_seek(tok,  len)                           ;
 
                 if (null(tok)) return ptr_null();
             }
@@ -152,15 +157,17 @@ u64_t
     __dns_name_len_from_ptr
         (ptr par)             {
             u8_t  len         ;
-            u16_t off         ;
             u64_t ret      = 0;
             ptr_rd8(par, &len);
 
             while (len)                      {
                 if(len & 0xC0) return ret + 2;
-                par = ptr_seek(par , len + 1);
+                par  = ptr_seek(par,  len + 1);
+                ret += (len + 1);
 
                 if(null(ptr_rd8(par, &len)))
                     return 0;
             }
+
+            return ret + 1;
 }

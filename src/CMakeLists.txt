@@ -18,6 +18,12 @@ add_library(trampoline STATIC
     details/build.h
     details/build.c
 
+    details/parse.h
+    details/parse.c
+
+    head.h
+    head.c
+
     name.h
     name.c
 
@@ -32,4 +38,7 @@ add_library(trampoline STATIC
 
     build.h
     build.c
+
+    parse.h
+    parse.c
 )

@@ -1,94 +1,78 @@
 #include "dns.h"
 #include "details/dns.h"
 
+#include "endian.h"
+
 obj_trait* dns_t = &__dns_trait;
-
-u16_t 
-    dns_id
-        (dns* par)                                    {
-            if (!par)                   return false_t;
-            if (trait_of(par) != dns_t) return false_t;
-
-            return __dns_id(par);
-}
-
-box*
-    dns_mem
-        (dns* par)                                    {
-            if (!par)                   return false_t;
-            if (trait_of(par) != dns_t) return false_t;
-
-            return ((__dns*)par)->mem;
-}
-
-u16_t 
-    dns_opcode
-        (dns* par)                                    {
-            if (!par)                   return false_t;
-            if (trait_of(par) != dns_t) return false_t;
-
-            return __dns_opcode(par);
-}
 
 u64_t 
     dns_len
-        (dns* par)                                    {
-            if (!par)                   return false_t;
-            if (trait_of(par) != dns_t) return false_t;
+        (obj* par)                              {
+            if (!par)                   return 0;
+            if (trait_of(par) != dns_t) return 0;
 
-            return __dns_len(par);
+            return ptr_dist(((__dns*)par)->ptr, ((__dns*)par)->ptr_off);
+}
+
+obj* 
+    dns_head
+        (obj* par)                              {
+            if (!par)                   return 0;
+            if (trait_of(par) != dns_t) return 0;
+
+            return &((__dns*)par)->dns_head;
 }
 
 it    
     dns_req_begin
-        (dns* par)                                   {
+        (obj* par)                                   {
             if (!par)                   return npos();
             if (trait_of(par) != dns_t) return npos();
 
-            return __dns_req_begin(par);
+            return list_begin(&((__dns*)par)->req);
 }
 
 it    
     dns_req_end
-        (dns* par)                                   {
+        (obj* par)                                   {
             if (!par)                   return npos();
             if (trait_of(par) != dns_t) return npos();
 
-            return __dns_req_end(par);
+            return list_end(&((__dns*)par)->req);
 }
 
 u16_t 
     dns_req_count
-        (dns* par)                                    {
+        (obj* par)                                    {
             if (!par)                   return false_t;
             if (trait_of(par) != dns_t) return false_t;
 
-            return __dns_req_count(par);
+            return be16(((__dns*)par)->dns_head.form->req);
 }
 
 it    
     dns_res_begin
-        (dns* par)                                   {
+        (obj* par)                                   {
             if (!par)                   return npos();
             if (trait_of(par) != dns_t) return npos();
 
-            return __dns_res_begin(par);
+            return list_begin(&((__dns*)par)->res);
 }
 
 it    
     dns_res_end
-        (dns* par)                                   {
+        (obj* par)                                   {
             if (!par)                   return npos();
             if (trait_of(par) != dns_t) return npos();
 
-            return __dns_res_end(par);
+            return list_end(&((__dns*)par)->res);
 }
 
 u16_t 
     dns_res_count
-        (dns* par)                                    {
+        (obj* par)                                    {
             if (!par)                   return false_t;
             if (trait_of(par) != dns_t) return false_t;
 
-            return __dns_res_count(par);
+            return be16(((__dns*)par)->dns_head.form->res);
 }

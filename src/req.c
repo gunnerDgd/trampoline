@@ -1,5 +1,6 @@
 #include "req.h"
 #include "details/req.h"
+#include "details/dns.h"
 
 #include "endian.h"
 
@@ -39,5 +40,23 @@ u16_t
 
              __dns_req* ret_req = par;
              return __dns_name_len_from_ptr(ret_req->form.name) + 4;
+}
+
+obj* 
+    dns_req_name
+        (obj* par)                              {
+            if (!par)                   return 0;
+            if (trait_of(par) != req_t) return 0;
+
+            __dns_req  *ret_req = par                             ;
+            __dns_name *ret     = make(&__dns_name_trait) from (0);
+
+            if (!ret) return 0;
+            if (!__dns_name_from_ptr(ret, ret_req->form.name, ret_req->dns->ptr)) {
+                del      (ret);
+                return false_t;
+            }
+
+            return ret;
 }
 

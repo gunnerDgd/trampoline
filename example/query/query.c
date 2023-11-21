@@ -1,6 +1,9 @@
 #include "dns.h"
 #include "res.h"
 #include "build.h"
+#include "parse.h"
+#include "head.h"
+#include "name.h"
 
 #include "udp.h"
 #include "io_sched.h"
@@ -13,32 +16,32 @@ io_sched_main(par, par_sched)                          {
     str *qry      = make(str_t) from (0)               ;
     str_push_back_cstr(qry, "www.naver.com", 13)       ;
 
-    dns_builder*   builder = make(dns_builder_t) from (0);
-    dns_build_head(builder, 1, 0x0100)                   ;
-    dns_build_req (builder, qry, 1, 1)                   ;
+    box* box     = make(box_t) from(1, 512)       ;
+    obj* builder = dns_build_from(box_ptr(box, 0));
+    if (!dns_build_head(builder, 1, 0x0100)) { printf("Build Failed (HEAD)\n"); return 1; }
+    if (!dns_build_req_a(builder, qry, 1))   { printf("Build Failed (REQ)\n") ; return 1; }
 
-    dns* dns         = dns_build(builder)   ;
-    box* dns_pkt     = dns_mem  (dns)       ;
-    ptr  dns_pkt_ptr = box_ptr  (dns_pkt, 0);
+    obj  *dns = dns_build  (builder);
+    if(!dns)                    {
+        printf("Build Failed\n");
+        return 1;
+    }
 
-    task* snd = udp_send_to(udp, dns_pkt_ptr, dns_len(dns), udp_addr);
+    task *snd = udp_send_to(udp, box_ptr(box, 0), dns_len(dns), udp_addr);
     await(snd);
 
     del(dns);
-    task* rcv = udp_recv(udp, dns_pkt_ptr, ptr_size(dns_pkt_ptr));
+    task* rcv = udp_recv(udp, box_ptr(box, 0), box_size(box));
     await(rcv);
+        
+    obj* parser = dns_parse_from(box_ptr(box, 0));
+    dns         = dns_parse(parser)              ;
 
-    dns = make(dns_t) from (2, dns_pkt, 0);
-    str* res = make(str_t) from(0);
-    dns_res_for(dns, res_it)                                         {
-        if (dns_res_as_a(get(res_it), res))                          {
-            printf("A : %s\n", ptr_as(str_ptr(res), const char*))    ;
-        }
-        if (dns_res_as_cname(get(res_it), res))                      {
-            printf("CNAME : %s\n", ptr_as(str_ptr(res), const char*));
-        }
+    dns_res_for(dns, res_it)                                      {
+        obj* res     = get(res_it)                                ;
+        str* res_str = dns_name_to_str(dns_res_data_as_cname(res));
 
-        del(res);
-        res = make(str_t) from(0);
+        if (res_str)
+            printf("%s\n", ptr_as(str_ptr(res_str), const char*));
     }
 }
