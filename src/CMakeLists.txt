@@ -18,6 +18,9 @@ add_library(trampoline STATIC
     details/build.h
     details/build.c
 
+    name.h
+    name.c
+
     req.h
     req.c
 

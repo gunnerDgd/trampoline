@@ -17,12 +17,8 @@ bool_t
             if (!par_builder->alloc)
                 return false_t;
 
-            par_builder->mem = make (box_t) from (2, 512, par_builder->alloc);
-            if (!par_builder->mem)
-                return false_t;
-
-            par_builder->dns = make(&__dns_trait) from(1, par_builder->mem);
-            if(!par_builder->dns)    {
+            if(!(par_builder->mem = make (box_t)        from (2, 512, par_builder->alloc))) return false_t;
+            if(!(par_builder->dns = make (&__dns_trait) from (1, par_builder->mem))) {
                 del(par_builder->mem);
                 return false_t;
             }
@@ -63,9 +59,8 @@ bool_t
                 par_opcode
             );          
 
-            if (!ret) return false_t;
-
-            if(ptr_same(par->dns->ptr_off, ptr_null())) {
+            if (!ret)       return false_t;
+            if (!null(par->dns->ptr_off)) {
                 del(&par->dns->dns_head);
                 return false_t;
             }
@@ -75,7 +70,7 @@ bool_t
 
 bool_t 
     __dns_build_req
-        (__dns_builder* par, str* par_req, u16_t par_type, u16_t par_cls) {
+        (__dns_builder* par, __dns_name* par_req, u16_t par_type, u16_t par_cls) {
             __dns_req* req = make(&__dns_req_trait) from (
                 4       ,
                 par->dns,
@@ -84,8 +79,8 @@ bool_t
                 par_cls
             );
 
-            if (!req) return false_t;
-            if (ptr_same(par->dns->ptr_off, ptr_null())) {
+            if (!req)       return false_t;
+            if (!null(par->dns->ptr_off)) {
                 del(req)      ;
                 return false_t;
             }
@@ -97,7 +92,7 @@ bool_t
 
 bool_t 
     __dns_build_res
-        (__dns_builder* par, str* par_req, u16_t par_type, u16_t par_cls, u16_t par_ttl, str* par_res) {
+        (__dns_builder* par, __dns_name* par_req, u16_t par_type, u16_t par_cls, u16_t par_ttl, __dns_name* par_res) {
             __dns_res* res = make(&__dns_res_trait) from (
                 6       ,
                 par->dns,
@@ -108,8 +103,8 @@ bool_t
                 par_res
             );
 
-            if (!res) return false_t;
-            if (ptr_same(par->dns->ptr_off, ptr_null())) {
+            if (!res)       return false_t;
+            if (!null(par->dns->ptr_off)) {
                 del(res)      ;
                 return false_t;
             }

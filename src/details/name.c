@@ -141,3 +141,26 @@ ptr
 
             return ptr_wr8(par_ptr, 0);
 }
+
+u64_t  
+    __dns_name_len
+        (__dns_name* par)             {
+            return str_len(&par->name);
+}
+
+u64_t
+    __dns_name_len_from_ptr
+        (ptr par)             {
+            u8_t  len         ;
+            u16_t off         ;
+            u64_t ret      = 0;
+            ptr_rd8(par, &len);
+
+            while (len)                      {
+                if(len & 0xC0) return ret + 2;
+                par = ptr_seek(par , len + 1);
+
+                if(null(ptr_rd8(par, &len)))
+                    return 0;
+            }
+}

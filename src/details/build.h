@@ -17,9 +17,9 @@ bool_t __dns_builder_init_as_clone(__dns_builder*, __dns_builder*);
 void   __dns_builder_deinit       (__dns_builder*)                ;
 u64_t  __dns_builder_size         ()                              ;
 
-bool_t __dns_build_head(__dns_builder*, u16_t, u16_t)                    ;
-bool_t __dns_build_req (__dns_builder*, str* , u16_t, u16_t)             ;
-bool_t __dns_build_res (__dns_builder*, str* , u16_t, u16_t, u16_t, str*);
-__dns* __dns_build     (__dns_builder*)                                  ;
+bool_t __dns_build_head(__dns_builder*, u16_t, u16_t)                                 ;
+bool_t __dns_build_req (__dns_builder*, __dns_name*, u16_t, u16_t)                    ;
+bool_t __dns_build_res (__dns_builder*, __dns_name*, u16_t, u16_t, u16_t, __dns_name*);
+__dns* __dns_build     (__dns_builder*)                                               ;
 
 #endif

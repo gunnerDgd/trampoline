@@ -16,7 +16,11 @@ u16_t
             if (!par)                   return -1;
             if (trait_of(par) != res_t) return -1;
 
-            return __dns_res_type(par);
+            __dns_res* ret_res = par;
+            u16_t      ret          ;
+
+            ptr_rd16   (ret_res->form.type, &ret);
+            return be16(ret);
 }
 
 u16_t 
@@ -25,7 +29,11 @@ u16_t
             if (!par)                   return -1;
             if (trait_of(par) != res_t) return -1;
 
-            return __dns_res_cls(par);
+            __dns_res* ret_res = par;
+            u16_t      ret          ;
+
+            ptr_rd16   (ret_res->form.cls, &ret);
+            return be16(ret);
 }
 
 u16_t 
@@ -34,7 +42,11 @@ u16_t
             if (!par)                   return -1;
             if (trait_of(par) != res_t) return -1;
 
-            return __dns_res_ttl(par);
+            __dns_res* ret_res = par;
+            u32_t      ret          ;
+
+            ptr_rd32   (ret_res->form.ttl, &ret);
+            return be32(ret);
 }
 
 u16_t 
@@ -43,102 +55,84 @@ u16_t
             if (!par)                   return -1;
             if (trait_of(par) != res_t) return -1;
 
-            return __dns_res_len(par);
+            __dns_res* ret = par;
+            return __dns_name_len_from_ptr(ret->form.name) +
+                     dns_res_data_len     (par)            + 
+                    10;
 }
 
-bool_t 
-    dns_res_as_a
-        (obj* par, str* par_ret)                      {
-            if (!par)                   return false_t;
-            if (trait_of(par) != res_t) return false_t;
+obj*
+    dns_res_req
+        (obj* par)                               {
+            if (!par)                   return -1;
+            if (trait_of(par) != res_t) return -1;
 
-            u16_t      res_type ;
-            __dns_res *res = par; ptr_rd16(res->form.type, &res_type);
-
-            if (be16(res_type) != 1)
-                return false_t;
-            
-            char  ret[32]  =         { 0, };
-            u8_t *ret_ptr;
-            u32_t ret_addr =              0; ptr_rd32(res->form.data, &ret_addr);
-                  ret_addr = be32(ret_addr);
-                  ret_ptr  = &ret_addr     ;
-            snprintf          (ret, 32, "%d.%d.%d.%d\0",  ret_ptr[0], ret_ptr[1], ret_ptr[2], ret_ptr[3]);
-            str_push_back_cstr(par_ret, ret, (strlen(ret) > 32) ? 32 : strlen(ret));
-
-            return true_t;
-}
-
-bool_t 
-    dns_res_as_aaaa
-        (obj* par, str* par_ret)                      {
-            if (!par)                   return false_t;
-            if (trait_of(par) != res_t) return false_t;
-
-            u16_t      res_type ;
-            __dns_res *res = par; ptr_rd16(res->form.type, &res_type);
-
-            if (be16(res_type) != 28)
-                return false_t;
-            
-            char    ret[128] = { 0, }                 ;
-            u16_t  *ret_ptr  = ptr_raw(res->form.data);
-            sprintf(ret       , "%04x:%04x:%04x:%04x:%04x:%04x:%04x:%04x\0",
-                    ret_ptr[0], 
-                    ret_ptr[1], 
-                    ret_ptr[2], 
-                    ret_ptr[3],
-                    ret_ptr[4], 
-                    ret_ptr[5], 
-                    ret_ptr[6], 
-                    ret_ptr[7]
-            );
-
-            str_push_back_cstr(par_ret, ret, 32);
-            return true_t;
-}
-
-bool_t 
-    dns_res_as_cname
-        (obj* par, str* par_ret)                      {
-            if (!par)                   return false_t;
-            if (trait_of(par) != res_t) return false_t;
-
-            u16_t      res_type      ;
-            __dns_res *res = par     ; ptr_rd16(res->form.type, &res_type);
-            __dns     *pkt = res->dns;
-
-            if (be16(res_type) != 5)
-                return false_t;
-
-            u16_t   len = 0             ;
-            ptr     tok = res->form.data;
-            ptr_rd8(tok, &len)          ;
-
-            while (len && !ptr_same(tok, ptr_null()))                                                 {
-                if(len & (0xC0))                                                                      {
-                    while(len & (0xC0))                                                               {
-                        ptr_rd16(tok, &len); len = (be16(len) ^ 0xC000); tok = ptr_seek(pkt->ptr, len);
-                        ptr_rd8 (tok, &len);
-                    }
-                    tok = ptr_seek(tok, 1);
-
-                    str_push_back_cstr(par_ret, ptr_raw(tok), len);
-                    str_push_back_cstr(par_ret, ".", 1)           ;
-
-                    tok = ptr_seek(tok, len);
-                    ptr_rd8(tok, &len)      ;
-                    continue                ;
-                }
-                tok = ptr_seek(tok, 1);
-
-                str_push_back_cstr(par_ret, ptr_raw(tok), len);
-                str_push_back_cstr(par_ret, ".", 1)           ;
-
-                tok = ptr_seek(tok, len);
-                ptr_rd8(tok, &len)      ;
+            __dns_res  *ret_res = par;
+            __dns_name *ret     = make(&__dns_name_trait) from (0);
+            if (!ret)                                                     return 0;
+            if (!__dns_name_from_ptr(ret, ret_res->form.name, ret_res->dns->ptr)) {
+                del(ret_res);
+                return     0;
             }
 
-            str_push_back_cstr(par_ret, "\0", 1);
-            return true_t;
+            return ret;
+}
+
+u64_t  
+    dns_res_data_len
+        (obj* par)                               {
+            if (!par)                   return -1;
+            if (trait_of(par) != res_t) return -1;
+
+            __dns_res *ret_res = par;
+            u16_t      ret          ;
+
+            ptr_rd16   (ret_res->form.data_len, &ret);
+            return be16(ret);
+}
+
+str*
+    dns_res_as_a
+        (obj* par)                                        {
+            if (!par)                       return false_t;
+            if (trait_of    (par) != res_t) return false_t;
+            if (dns_res_type(par) != 1)     return false_t;
+            
+            __dns_res *ret_res = par            ;
+            str       *ret = make(str_t) from(0);
+
+            if (!ret) return false_t;
+            
+            u32_t addr            ; ptr_rd32(ret_res->form.data, &addr);
+            u8_t *addr_ptr = &addr; addr = be32(addr)                  ;
+            char  addr_buf[32]    ;
+
+            snprintf(addr_buf, 32, "%d.%d.%d.%d\0",
+                addr_ptr[0],
+                addr_ptr[1],
+                addr_ptr[2],
+                addr_ptr[3]
+            );
+
+            str_push_back_cstr(ret, addr_buf, 32);
+            return ret;
+}
+
+obj*
+    dns_res_as_cname
+        (obj* par)                                        {
+            if (!par)                       return false_t;
+            if (trait_of    (par) != res_t) return false_t;
+            if (dns_res_type(par) != 5)     return false_t;
+
+            __dns_name *ret     = make(&__dns_name_trait) from(0);
+            __dns_res  *ret_res = par;
+            
+            if (!ret)                                               return false_t;
+            if (!__dns_name_from_ptr(ret, ret_res->form.data, ret_res->dns->ptr)) {
+                del      (ret);
+                return false_t;
+            }
+
+            return ret;
 }

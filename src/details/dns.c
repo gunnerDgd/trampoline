@@ -34,7 +34,6 @@ bool_t
             if (!make_at(par_dns->dns_head, &__dns_head_trait) from(1, par_dns))
                 goto __dns_init_failed;
 
-
             if (!__dns_req_parse(par_dns)) goto __dns_init_failed;
             if (!__dns_res_parse(par_dns)) goto __dns_init_failed;
 
@@ -82,7 +81,7 @@ bool_t
                     return false_t;
                 }
 
-                if (ptr_same(par->ptr_off, ptr_null())) {
+                if (null(par->ptr_off)) {
                     del(req)      ;
                     return false_t;
                 }
@@ -106,7 +105,7 @@ bool_t
                     return false_t;
                 }
 
-                if (ptr_same(par->ptr_off, ptr_null())) {
+                if (null(par->ptr_off)) {
                     del(res)      ;
                     return false_t;
                 }
