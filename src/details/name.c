@@ -5,18 +5,18 @@
 
 #include "endian.h"
 
-obj_trait __dns_name_trait                  = {
-    .init          = &__dns_name_init         ,
-    .init_as_clone = &__dns_name_init_as_clone,
-    .init_as_ref   =                         0,
-    .deinit        = &__dns_name_deinit       ,
-    .name          =                         0,
-    .size          = &__dns_name_size 
+obj_trait dns_name_t                      = {
+    .init          = &dns_name_init         ,
+    .init_as_clone = &dns_name_init_as_clone,
+    .init_as_ref   =                       0,
+    .deinit        = &dns_name_deinit       ,
+    .name          =                       0,
+    .size          = &dns_name_size 
 };
 
 bool_t 
-    __dns_name_init
-        (__dns_name* par_name, u32_t par_count, va_list par) {
+    dns_name_init
+        (dns_name* par_name, u32_t par_count, va_list par) {
             alloc* par_alloc = (par_count == 1) ? va_arg(par, alloc*) : get_alloc();
             if   (!par_alloc)
                 return false_t;
@@ -25,8 +25,8 @@ bool_t
 }
 
 bool_t 
-    __dns_name_init_as_clone
-        (__dns_name* par, __dns_name* par_clone) {
+    dns_name_init_as_clone
+        (dns_name* par, dns_name* par_clone) {
             if(make_at(par->name, str_t) from (0))
                 return false_t;
 
@@ -35,19 +35,19 @@ bool_t
 }
 
 void  
-    __dns_name_deinit
-        (__dns_name* par)  {
+    dns_name_deinit
+        (dns_name* par)  {
             del(&par->name);
 }
 
 u64_t  
-    __dns_name_size()            {
-        return sizeof(__dns_name);
+    dns_name_size()            {
+        return sizeof(dns_name);
 }
 
 bool_t 
-    __dns_name_from_str
-        (__dns_name* par, str* par_str)                          {
+    dns_name_from_str
+        (dns_name* par, str* par_str)                          {
             ptr  tok     = str_ptr           (par_str)           ,
                  tok_end = str_find_from_cstr(par_str, 0, ".", 1);
             u8_t len;
@@ -72,8 +72,8 @@ bool_t
 }
 
 bool_t 
-    __dns_name_from_ptr
-        (__dns_name* par, ptr par_ptr, ptr par_dns) {
+    dns_name_from_ptr
+        (dns_name* par, ptr par_ptr, ptr par_dns) {
             u8_t  len;
             u16_t off;
 
@@ -97,8 +97,8 @@ bool_t
 }
 
 str* 
-    __dns_name_to_str
-        (__dns_name* par)                 {
+    dns_name_to_str
+        (dns_name* par)                   {
             u8_t len = 0                  ;
             ptr  ptr = str_ptr(&par->name);
             str* str = make(str_t) from(0);
@@ -122,8 +122,8 @@ str*
 }
 
 ptr
-    __dns_name_to_ptr
-        (__dns_name* par, ptr par_ptr, ptr par_dns)          {
+    dns_name_to_ptr
+        (dns_name* par, ptr par_ptr, ptr par_dns)            {
             ptr  tok     =               str_ptr(&par->name) ,
                  tok_end = ptr_seek(tok, str_len(&par->name));
             u8_t len;
@@ -148,13 +148,13 @@ ptr
 }
 
 u64_t  
-    __dns_name_len
-        (__dns_name* par)             {
+    dns_name_len
+        (dns_name* par)               {
             return str_len(&par->name);
 }
 
 u64_t
-    __dns_name_len_from_ptr
+    dns_name_len_from_ptr
         (ptr par)             {
             u8_t  len         ;
             u64_t ret      = 0;

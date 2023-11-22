@@ -3,19 +3,19 @@
 
 #include "endian.h"
 
-obj_trait __dns_head_trait                  = {
-    .init          = &__dns_head_init         ,
-    .init_as_clone = &__dns_head_init_as_clone,
-    .init_as_ref   =                         0,
-    .deinit        = &__dns_head_deinit       ,
-    .name          =                         0,
-    .size          = &__dns_head_size
+obj_trait dns_head_t                      = {
+    .init          = &dns_head_init         ,
+    .init_as_clone = &dns_head_init_as_clone,
+    .init_as_ref   =                       0,
+    .deinit        = &dns_head_deinit       ,
+    .name          =                       0,
+    .size          = &dns_head_size
 };
 
 bool_t 
-    __dns_head_init
-        (__dns_head* par_head, u32_t par_count, va_list par) {
-            par_head->dns = ref(va_arg(par, __dns*));
+    dns_head_init
+        (dns_head* par_head, u32_t par_count, va_list par) {
+            par_head->dns = va_arg(par, dns*);
             if (!par_head->dns)
                 return false_t;
 
@@ -32,32 +32,29 @@ bool_t
                 return true_t;
             }
 
-            par_head->form->id     = be16(va_arg(par, u16_t))            ;
-            par_head->form->opcode = be16(va_arg(par, u16_t))            ;
-            par_head->dns->ptr_off = ptr_seek(par_head->dns->ptr_off, 12);
+            par_head->form->id         = be16(va_arg(par, u16_t));
+            par_head->form->flag       = be16(va_arg(par, u16_t));
+            par_head->form->req        =                        0;
+            par_head->form->res        =                        0;
+            par_head->form->auth       =                        0;
+            par_head->form->additional =                        0;
+            par_head->dns->ptr_off     = ptr_seek(par_head->dns->ptr_off, 12);
+
             return true_t;
 }
 
 bool_t 
-    __dns_head_init_as_clone
-        (__dns_head* par, __dns_head* par_clone) {
+    dns_head_init_as_clone
+        (dns_head* par, dns_head* par_clone) {
             return false_t;
 }
 
 void   
-    __dns_head_deinit
-        (__dns_head* par) {
-            del(par->dns);
+    dns_head_deinit
+        (dns_head* par) {
 }
 
 u64_t  
-    __dns_head_size() {
-        return sizeof(__dns_head);
+    dns_head_size()            {
+        return sizeof(dns_head);
 }
-
-u16_t __dns_head_id        (__dns_head* par) { return be16(par->form->id)        ; }
-u16_t __dns_head_opcode    (__dns_head* par) { return be16(par->form->opcode)    ; }
-u16_t __dns_head_req       (__dns_head* par) { return be16(par->form->req)       ; }
-u16_t __dns_head_res       (__dns_head* par) { return be16(par->form->res)       ; }
-u16_t __dns_head_auth      (__dns_head* par) { return be16(par->form->auth)      ; }
-u16_t __dns_head_additional(__dns_head* par) { return be16(par->form->additional); }

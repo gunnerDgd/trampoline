@@ -4,33 +4,26 @@
 #include "obj.h"
 #include "box.h"
 
-typedef struct __dns_head_form {
+typedef struct dns_head_form {
     u16_t id        ,
-          opcode    ,
+          flag      ,
           req       ,
           res       , 
           auth      ,
           additional;
-}   __dns_head_form ;
+}   dns_head_form   ;
 
-extern obj_trait __dns_head_trait;
-typedef struct   __dns_head      {
-    obj              head;
-    struct __dns    *dns ;
-    ptr              ptr ;
-    __dns_head_form *form;
-}   __dns_head;
+extern obj_trait dns_head_t;
+typedef struct   dns_head  {
+    obj            head;
+    struct dns    *dns ;
+    ptr            ptr ;
+    dns_head_form *form;
+}   dns_head;
 
-bool_t __dns_head_init         (__dns_head*, u32_t, va_list);
-bool_t __dns_head_init_as_clone(__dns_head*, __dns_head*)   ;
-void   __dns_head_deinit       (__dns_head*)                ;
-u64_t  __dns_head_size         ()                           ;
-
-u16_t __dns_head_id        (__dns_head*);
-u16_t __dns_head_opcode    (__dns_head*);
-u16_t __dns_head_req       (__dns_head*);
-u16_t __dns_head_res       (__dns_head*);
-u16_t __dns_head_auth      (__dns_head*);
-u16_t __dns_head_additional(__dns_head*);
+bool_t dns_head_init         (dns_head*, u32_t, va_list);
+bool_t dns_head_init_as_clone(dns_head*, dns_head*)     ;
+void   dns_head_deinit       (dns_head*)                ;
+u64_t  dns_head_size         ()                         ;
 
 #endif

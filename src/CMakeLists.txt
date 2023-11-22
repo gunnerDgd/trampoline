@@ -15,15 +15,6 @@ add_library(trampoline STATIC
     details/dns.h
     details/dns.c
 
-    details/build.h
-    details/build.c
-
-    details/parse.h
-    details/parse.c
-
-    head.h
-    head.c
-
     name.h
     name.c
 
@@ -36,15 +27,9 @@ add_library(trampoline STATIC
     dns.h
     dns.c
 
-    parse.h
-    parse.c
+    dns/a.h
+    dns/a.c
 
-    build.h
-    build.c
-
-    build/a.h
-    build/a.c
-
-    build/cname.h
-    build/cname.c
+    dns/cname.h
+    dns/cname.c
 )
