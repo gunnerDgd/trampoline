@@ -1,4 +1,5 @@
 #include "res.h"
+#include "req.h"
 #include "dns.h"
 
 #include "endian.h"
@@ -13,53 +14,85 @@ obj_trait __dns_res_trait                  = {
 };
 
 bool_t 
+    __dns_res_from
+        (__dns_res* par) {
+                if (null(par->form.name = par->dns->ptr_off))                                                         return false_t;
+                if (null(par->form.type     = ptr_seek(par->form.name    , __dns_name_len_from_ptr(par->form.name)))) return false_t;
+                if (null(par->form.cls      = ptr_seek(par->form.type    , 2)))                                       return false_t;
+                if (null(par->form.ttl      = ptr_seek(par->form.cls     , 2)))                                       return false_t;
+                if (null(par->form.data_len = ptr_seek(par->form.ttl     , 4)))                                       return false_t;
+                if (null(par->form.data     = ptr_seek(par->form.data_len, 2)))                                       return false_t;
+
+                u16_t data_len;
+                if (null(ptr_rd16(par->form.data_len, &data_len)))
+                    return false_t;
+
+                par->dns->ptr_off = ptr_seek(par->form.data, be16(data_len));
+                return true_t;
+}
+
+bool_t 
+    __dns_res_from_param
+        (__dns_res* par, struct __dns_req* par_req, u16_t par_type, u16_t par_cls, u32_t par_ttl, u16_t par_len, void* par_data) {
+            if(null(par->form.name = par->dns->ptr_off)) 
+                return false_t;
+
+            u16_t req = ptr_dist(par_req->form.name, par->dns->ptr);
+                  req = be16    (req | 0xC000)                     ;
+            if (null(par->form.type     = ptr_wr16(par->form.name    , req)))      return false_t;
+            if (null(par->form.cls      = ptr_wr16(par->form.type    , par_type))) return false_t;
+            if (null(par->form.ttl      = ptr_wr16(par->form.cls     , par_cls)))  return false_t;
+            if (null(par->form.data_len = ptr_wr32(par->form.ttl     , par_ttl)))  return false_t;
+            if (null(par->form.data     = ptr_wr16(par->form.data_len, par_len)))  return false_t;
+                        
+            par->dns->ptr_off = ptr_write(par->form.data, par_data, par_len);
+            return true_t;
+}
+
+bool_t 
     __dns_res_init
         (__dns_res* par_res, u32_t par_count, va_list par) {
             par_res->dns = ref(va_arg(par, __dns*));
-            
-            if (!par_res->dns)                              return false_t            ;
-            if (null(par_res->ptr = par_res->dns->ptr_off)) goto __dns_res_init_failed;
+            switch(par_count)                {
+            case 1:                          {
+                if(!__dns_res_from(par_res)) {
+                    del(par_res->dns);
+                    return    false_t;
+                }
 
-            if (par_count == 1)                                                                                                                             {
-                if (null(par_res->form.name = par_res->ptr))                                                                      goto __dns_res_init_failed;
-                if (null(par_res->form.type     = ptr_seek(par_res->form.name    , __dns_name_len_from_ptr(par_res->form.name)))) goto __dns_res_init_failed;
-                if (null(par_res->form.cls      = ptr_seek(par_res->form.type    , 2)))                                           goto __dns_res_init_failed;
-                if (null(par_res->form.ttl      = ptr_seek(par_res->form.cls     , 2)))                                           goto __dns_res_init_failed;
-                if (null(par_res->form.data_len = ptr_seek(par_res->form.ttl     , 4)))                                           goto __dns_res_init_failed;
-                if (null(par_res->form.data     = ptr_seek(par_res->form.data_len, 2)))                                           goto __dns_res_init_failed;
+                break;
+            }
+            case 7:                                          {
+                __dns_req* par_req  = va_arg(par, __dns_req*);
+                u16_t      par_type = va_arg(par, u16_t)     ;
+                u16_t      par_cls  = va_arg(par, u16_t)     ;
+                u32_t      par_ttl  = va_arg(par, u32_t)     ;
+                u16_t      par_len  = va_arg(par, u16_t)     ;
+                void*      par_data = va_arg(par, void*)     ;
 
-                u16_t res_len;
-                if (null(ptr_rd16(par_res->form.data_len, &res_len))) goto __dns_res_init_failed;
-                par_res->dns->ptr_off  = ptr_seek(par_res->form.data, be16(res_len));
+                bool_t ret = __dns_res_from_param (
+                    par_res ,
+                    par_req ,
+                    par_type,
+                    par_cls ,
+                    par_ttl ,
+                    par_len ,
+                    par_data
+                );
 
-                return true_t;
+                if (!ret)            {
+                    del(par_res->dns);
+                    return    false_t;
+                }
+
+                break;
+            }
+            default:
+                del(par_res->dns);
+                return    false_t;
             }
 
-            if (null(par_res->form.name = par_res->ptr))                                                   
-                goto __dns_res_init_failed;
-            if (null(par_res->form.type = __dns_name_to_ptr(va_arg(par, __dns_name*), par_res->form.name, par_res->dns->ptr)))
-                goto __dns_res_init_failed;
-
-            if (null(par_res->form.cls      = ptr_seek(par_res->form.type    , 2))) goto __dns_res_init_failed;
-            if (null(par_res->form.ttl      = ptr_seek(par_res->form.cls     , 2))) goto __dns_res_init_failed;
-            if (null(par_res->form.data_len = ptr_seek(par_res->form.ttl     , 4))) goto __dns_res_init_failed;
-            if (null(par_res->form.data     = ptr_seek(par_res->form.data_len, 2))) goto __dns_res_init_failed;
-
-            ptr_wr16(par_res->form.type, be16(va_arg(par, u16_t)));
-            ptr_wr16(par_res->form.cls , be16(va_arg(par, u16_t)));
-            ptr_wr16(par_res->form.ttl , be16(va_arg(par, u16_t)));
-
-            u16_t data_len = va_arg(par, u16_t);
-            void *data     = va_arg(par, void*);
-
-            ptr_wr16 (par_res->form.data_len,  be16(data_len));
-            ptr_write(par_res->form.data    , data, data_len) ;
-
-            par_res->dns->ptr_off = ptr_seek(par_res->form.data, data_len);
             return true_t;
-    __dns_res_init_failed:
-            del(par_res->dns);
-            return false_t;
 }
 
 bool_t 

@@ -30,9 +30,9 @@ void
 
 void 
     dns_parse_res
-        (obj* par, u16_t par_type, u16_t par_cls, str* par_name)           {
-            if (!par)                                                return;
-            if (trait_of(par) != dns_parser_t)                       return;
+        (obj* par, u16_t par_type, u16_t par_cls, str* par_name) {
+            if (!par)                          return;
+            if (trait_of(par) != dns_parser_t) return;
 
             __dns_name* name = make(&__dns_name_trait) from(0);
             if (!name)                  return false_t;

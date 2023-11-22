@@ -21,8 +21,7 @@ bool_t
 
             par_req->ptr               = par_req->dns->ptr_off;
             if (null(par_req->ptr)) goto __dns_req_init_failed;
-
-            if(par_count == 1)                                                                                                                   {
+            if (par_count == 1)                                                                                                                  {
                 if (null(par_req->form.name    = par_req->ptr))                                                        goto __dns_req_init_failed;
                 if (null(par_req->form.type    = ptr_seek(par_req->ptr, __dns_name_len_from_ptr(par_req->form.name)))) goto __dns_req_init_failed;
                 if (null(par_req->form.cls     = ptr_seek(par_req->form.type, 2)))                                     goto __dns_req_init_failed;

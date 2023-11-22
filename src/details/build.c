@@ -153,9 +153,9 @@ bool_t
 
 bool_t 
     __dns_build_res_cname
-        (__dns_builder* par, __dns_name* par_name, u16_t par_cls, u32_t par_ttl, __dns_name* par_cname) {
-            if(!par      || trait_of(par)      != &__dns_builder_trait) return false_t;
-            if(!par_name || trait_of(par_name) != &__dns_name_trait)    return false_t;
+        (__dns_builder* par, __dns_req* par_req, u16_t par_cls, u32_t par_ttl, __dns_name* par_cname) {
+            if(!par     || trait_of(par)     != &__dns_builder_trait) return false_t;
+            if(!par_req || trait_of(par_req) != &__dns_req_trait)     return false_t;
 
             if(!par->req)        return false_t;
             if (par->auth)       return false_t;
@@ -164,7 +164,7 @@ bool_t
             __dns_res* res = make(&__dns_res_trait) from (
                 7       ,
                 par->dns,
-                par_name,
+                par_req ,
                 5       ,
                 par_cls ,
                 par_ttl ,
