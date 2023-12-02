@@ -4,57 +4,94 @@
 
 #include "endian.h"
 
+u64_t
+    dns_req_count
+        (obj* par)                              {
+            if (!par)                   return 0;
+            if (trait_of(par) != dns_t) return 0;
+
+            return head_req(&((dns*)par)->dns_head);
+}
+
+dns_req 
+    dns_req_from
+        (obj* par)                              {
+            if (!par)                   return 0;
+            if (trait_of(par) != dns_t) return 0;
+
+            return list_begin(&((dns*)par)->req);
+}
+
+dns_req 
+    dns_req_next
+        (dns_req par)            {
+            return list_next(par);
+}
+
 u16_t 
     dns_req_type
-        (obj* par)                                    {
-            if(!par)                         return -1;
-            if (trait_of(par) != &dns_req_t) return -1;
+        (dns_req par)                                 {
+            if (!par)                        return -1; req* par_req = list_get(par);
+            if (!par_req)                    return -1;
+            if (trait_of(par_req) != &req_t) return -1;
 
-            dns_req* ret_req = par;
-            u16_t    ret          ;
-             
-            ptr_rd16   (ret_req->form.type, &ret);
-            return be16(ret);
+            return req_type(par_req);
 }
 
 u16_t 
     dns_req_cls
-        (obj* par)                                    {
-            if(!par)                         return -1;
-            if (trait_of(par) != &dns_req_t) return -1;
+        (dns_req par)                                 {
+            if (!par)                        return -1; req* par_req = list_get(par);
+            if (!par_req)                    return -1;
+            if (trait_of(par_req) != &req_t) return -1;
 
-            dns_req* ret_req = par;
-            u16_t      ret          ;
-             
-            ptr_rd16   (ret_req->form.cls, &ret);
-            return be16(ret);
+            return req_cls(par_req);
 }
 
-u16_t 
-    dns_req_len
-        (obj* par)                                    {
-            if(!par)                         return -1;
-            if (trait_of(par) != &dns_req_t) return -1;
-
-             dns_req* ret_req = par;
-             return dns_name_len_from_ptr(ret_req->form.name) + 4;
-}
-
-obj* 
+str*
     dns_req_name
-        (obj* par)                                   {
-            if (!par)                        return 0;
-            if (trait_of(par) != &dns_req_t) return 0;
+        (dns_req par)                                {
+            if (!par)                        return 0; req* par_req = list_get(par);
+            if (!par_req)                    return 0;
+            if (trait_of(par_req) != &req_t) return 0;
 
-            dns_req  *ret_req = par                       ;
-            dns_name *ret     = make(&dns_name_t) from (0);
+            name* ret_name = req_name(par_req);
+            if  (!ret_name) return 0;
 
-            if (!ret) return 0;
-            if (!dns_name_from_ptr(ret, ret_req->form.name, ret_req->dns->ptr)) {
-                del      (ret);
-                return false_t;
-            }
-
+            str*   ret = name_as_str(ret_name); del(ret_name);
             return ret;
 }
 
+dns_req 
+    dns_req_a
+        (obj* par, str* par_str)                {
+            if (!par)                   return 0;
+            if (!par_str)               return 0;
+            if (trait_of(par) != dns_t) return 0;
+
+            name *ret_name = make(&name_t) from(1, par_str)            ; if(!ret_name) return 0;
+            req  *ret      = make(&req_t)  from(4, par, ret_name, 1, 1);
+            if  (!ret)       {
+                del(ret_name);
+                return 0;
+            }
+
+            return list_push_back(&((dns*)par)->req, ret);
+}
+
+dns_req 
+    dns_req_cname
+        (obj* par, str* par_str)                {
+            if (!par)                   return 0;
+            if (!par_str)               return 0;
+            if (trait_of(par) != dns_t) return 0;
+
+            name *ret_name = make(&name_t) from(1, par_str)            ; if(!ret_name) return 0;
+            req  *ret      = make(&req_t)  from(4, par, ret_name, 5, 1);
+            if  (!ret)       {
+                del(ret_name);
+                return 0;
+            }
+
+            return list_push_back(&((dns*)par)->req, ret);
+}

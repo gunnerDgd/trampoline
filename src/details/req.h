@@ -3,26 +3,27 @@
 
 #include "name.h"
 
-typedef struct dns_req_form {
-    ptr name      ,
-        type      ,
-        cls       ;
-}   dns_req_form  ;
+typedef struct req_form {
+    u8_t  *name;
+    u16_t *type,
+          *cls ;
+}   req_form   ;
 
-extern obj_trait dns_req_t;
-typedef struct   dns_req  {
+extern obj_trait req_t;
+typedef struct   req  {
     obj          head;
     struct dns  *dns ;
-    ptr          ptr ;
-    dns_req_form form;
-}   dns_req;
+    req_form     form;
+}   req;
 
-bool_t dns_req_do_init_from      (dns_req*)                ;
-bool_t dns_req_do_init_from_param(dns_req*, va_list)       ;
+bool_t req_new         (req*, u32_t, va_list)     ;
+bool_t req_new_from    (req*)                     ;
+bool_t req_new_from_par(req*, name*, u16_t, u16_t);
+bool_t req_clone       (req*, req*)               ;
+void   req_del         (req*)                     ;
 
-bool_t dns_req_init              (dns_req*, u32_t, va_list);
-bool_t dns_req_init_as_clone     (dns_req*, dns_req*)      ;
-void   dns_req_deinit            (dns_req*)                ;
-u64_t  dns_req_size              (dns_req*)                ;
+name*  req_name        (req*);
+u16_t  req_type        (req*);
+u16_t  req_cls         (req*);
 
 #endif

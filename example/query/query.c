@@ -1,51 +1,43 @@
+#include <run.h>
+#include <async.h>
+#include <udp.h>
+
 #include "dns.h"
-#include "dns/a.h"
-#include "dns/cname.h"
-
+#include "req.h"
 #include "res.h"
-#include "name.h"
-
-#include "udp.h"
-#include "io_sched.h"
 
 #include <stdio.h>
 #include <intrin.h>
 
-io_sched_main(par, par_sched)                          {
-    printf("Begin");
+run()                                                  {
     v4  *udp_addr = make(v4_t)  from (2, "8.8.8.8", 53);
-    udp *udp      = make(udp_t) from (1, par_sched)    ;
+    v4  *res_addr = make(v4_t)  from (2, "1.1.1.1", 53);
+    udp *udp      = make(udp_t) from (0)               ;
+    box *box      = make(box_t) from (1, 512)          ;
 
-    box*     box      = make(box_t) from(1, 512);
-    dns_flag dns_flag = { 
-        .rd = 1
-    };
-    obj*     dns      = dns_new(box_ptr(box, 0), 1, dns_flag);
+    dns_flag dns_flag = { .rd = 1, .qr = 1 };
+    obj*     dns      = make(dns_t) from (3, box, 1, dns_flag);
+    str     *req      = make(str_t) from (0)                  ;
 
-    dns_req_a_cstr(dns, "www.naver.com", 13, 1);
+    str_push_back_cstr(req, "www.naver.com", 13);
+    dns_res_a         (dns, dns_req_a(dns, req), 1000, res_addr);
+    await (udp_send_to(udp, box_ptr(box, 0), dns_size(dns), udp_addr));
 
-    printf("Send\n");
-    task *snd = udp_send_to(udp, box_ptr(box, 0), dns_len(dns), udp_addr);
-    printf("Sent\n");
-    await(snd);
+    /*del(dns);
+    await(udp_recv(udp, box_ptr(box, 0), box_size(box)));
+    
+    dns_req res      = dns_res_from(dns);
+    for ( ; res; res = dns_res_next(res))                             {
+        if (dns_res_type(res) == 5)                                   {
+            printf("CNAME REQ : %s\n", str_ptr(dns_res_req     (res)));
+            printf("CNAME RES : %s\n", str_ptr(dns_res_as_cname(res)));
+        }
 
-    del  (dns);
-    printf("Receive\n");
-    task* rcv = udp_recv(udp, box_ptr(box, 0), box_size(box));
-    printf("Received\n");
-    await(rcv);
-
-    u64_t begin = __rdtsc();
-    dns = dns_new_from(box_ptr(box, 0));
-    u64_t end = __rdtsc();
-
-    dns_res_for(dns, res_it)                    {
-        obj* res     = get(res_it)              ;
-        str* res_str = dns_res_as_cname_str(res);
-
-        if (res_str)
-            printf("%s\n", ptr_as(str_ptr(res_str), const char*));
+        if (dns_res_type(res) == 1)                           {
+            printf("A REQ : %s\n", str_ptr(dns_res_req (res)));
+            printf("A RES : %s\n", str_ptr(dns_res_as_a(res)));
+        }
     }
 
-    del(dns);
+    del(dns);*/
 }

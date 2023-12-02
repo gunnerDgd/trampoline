@@ -1,10 +1,12 @@
 #ifndef __DNS_NAME_H__
 #define __DNS_NAME_H__
 
-#include "obj.h"
+#include <obj.h>
 
-obj* dns_name_new     (str*)              ;
-obj* dns_name_new_cstr(const char*, u64_t);
-str* dns_name_as_str  (obj*)			  ;
+typedef obj* dns_name;
+
+dns_name    dns_name_new_from_cstr(const char*);
+dns_name    dns_name_new          (str*)       ;
+str*        dns_name_as_str       (dns_name)   ;
 
 #endif

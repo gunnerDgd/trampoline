@@ -1,15 +1,26 @@
 #ifndef __DNS_RES_H__
 #define __DNS_RES_H__
 
-#include "obj.h"
+#include <obj.h>
+#include <v4.h>
 
-u16_t  dns_res_type(obj*);
-u16_t  dns_res_cls (obj*);
-u16_t  dns_res_ttl (obj*);
+#include "req.h"
 
-obj*   dns_res_req	       (obj*);
-str*   dns_res_as_a        (obj*);
-obj*   dns_res_as_cname    (obj*);
-str*   dns_res_as_cname_str(obj*);
+typedef void* dns_res;
+
+u64_t   dns_res_count   (obj*)   ;
+dns_res dns_res_from    (obj*)   ;
+dns_res dns_res_next    (dns_res);
+
+str*    dns_res_req     (dns_res);
+u16_t   dns_res_type    (dns_res);
+u16_t   dns_res_cls     (dns_res);
+u32_t   dns_res_ttl     (dns_res);
+
+str*    dns_res_as_a    (dns_res);
+str*    dns_res_as_cname(dns_res);
+
+dns_res dns_res_a       (obj*, dns_req, u32_t, v4*) ;
+dns_res dns_res_cname   (obj*, dns_req, u32_t, str*);
 
 #endif

@@ -1,6 +1,6 @@
 #include "res.h"
-
 #include "details/res.h"
+#include "details/req.h"
 #include "details/dns.h"
 
 #include "endian.h"
@@ -8,121 +8,169 @@
 #include <stdio.h>
 #include <string.h>
 
+u64_t
+    dns_res_count
+        (obj* par)                              {
+            if (!par)                   return 0;
+            if (trait_of(par) != dns_t) return 0;
+
+            return head_res(&((dns*)par)->dns_head);
+}
+
+dns_req 
+    dns_res_from
+        (obj* par)                              {
+            if (!par)                   return 0;
+            if (trait_of(par) != dns_t) return 0;
+
+            return list_begin(&((dns*)par)->res);
+}
+
+dns_req 
+    dns_res_next
+        (dns_req par)                       {
+            dns_req ret = list_next(par)    ;
+            return (list_get(ret)) ? ret : 0;
+}
 
 u16_t 
     dns_res_type
-        (obj* par)                                    {
-            if (!par)                        return -1;
-            if (trait_of(par) != &dns_res_t) return -1;
-
-            dns_res* ret_res = par;
-            u16_t      ret          ;
-
-            ptr_rd16   (ret_res->form.type, &ret);
-            return be16(ret);
-}
-
-u16_t
-    dns_res_cls
-        (obj* par)                                    {
-            if (!par)                        return -1;
-            if (trait_of(par) != &dns_res_t) return -1;
-
-            dns_res* ret_res = par;
-            u16_t    ret          ;
-
-            ptr_rd16   (ret_res->form.cls, &ret);
-            return be16(ret);
+        (dns_res par)                                 {
+            if (!par)                        return -1; res* par_res = list_get(par);
+            if (!par_res)                    return -1;
+            if (trait_of(par_res) != &res_t) return -1;
+            return res_type(par_res);
 }
 
 u16_t 
-    dns_res_ttl
-        (obj* par)                                    {
-            if (!par)                        return -1;
-            if (trait_of(par) != &dns_res_t) return -1;
-
-            dns_res* ret_res = par;
-            u32_t    ret          ;
-
-            ptr_rd32   (ret_res->form.ttl, &ret);
-            return be32(ret);
+    dns_res_cls
+        (dns_res par)                                 {
+            if (!par)                        return -1; res* par_res = list_get(par);
+            if (!par_res)                    return -1;
+            if (trait_of(par_res) != &res_t) return -1;
+            return res_cls(par_res);
 }
 
-obj*
+u32_t 
+    dns_res_ttl
+        (dns_res par)                                 {
+            if (!par)                        return -1; res* par_res = list_get(par);
+            if (!par_res)                    return -1;
+            if (trait_of(par_res) != &res_t) return -1;
+            return res_ttl(par_res);
+}
+
+str*
     dns_res_req
-        (obj* par)                                    {
-            if (!par)                        return -1;
-            if (trait_of(par) != &dns_res_t) return -1;
+        (obj* par)                                   {
+            if (!par)                        return 0; res* par_res = list_get(par);
+            if (!par_res)                    return 0;
+            if (trait_of(par_res) != &res_t) return 0;
 
-            dns_res  *ret_res = par;
-            dns_name *ret     = make(&dns_name_t) from (0);
-            if (!ret)                                                   return 0;
-            if (!dns_name_from_ptr(ret, ret_res->form.name, ret_res->dns->ptr)) {
-                del(ret_res);
-                return     0;
-            }
+            name *ret_name = res_req(par_res);
+            if  (!ret_name) return false_t;
 
+            str*   ret = name_as_str(ret_name); del(ret_name);
             return ret;
 }
 
 str*
     dns_res_as_a
-        (obj* par)                                             {
-            if (!par)                            return false_t;
-            if (trait_of    (par) != &dns_res_t) return false_t;
-            if (dns_res_type(par) != 1)          return false_t;
-            
-            dns_res *ret_res = par            ;
-            str     *ret = make(str_t) from(0);
+        (dns_res par)                                {
+            if (!par)                        return 0; res* par_res = list_get(par);
+            if (!par_res)                    return 0;
+            if (trait_of(par_res) != &res_t) return 0;
+            if (dns_res_type(par) != 1)      return 0;
 
-            if (!ret) return false_t;
-            
-            u32_t addr            ; ptr_rd32(ret_res->form.data, &addr);
-            u8_t *addr_ptr = &addr; addr = be32(addr)                  ;
-            char  addr_buf[32]    ;
+            str *ret = make(str_t) from (0);
+            if (!ret) return 0;
 
+            u8_t    *addr = par_res->form.data;
+            char     addr_buf [32];
             snprintf(addr_buf, 32, "%d.%d.%d.%d\0",
-                addr_ptr[0],
-                addr_ptr[1],
-                addr_ptr[2],
-                addr_ptr[3]
+                (u32_t)addr[0],
+                (u32_t)addr[1],
+                (u32_t)addr[2],
+                (u32_t)addr[3]
             );
 
             str_push_back_cstr(ret, addr_buf, 32);
             return ret;
 }
 
-obj*
+str*
     dns_res_as_cname
-        (obj* par)                                       {
-            if (!par)                            return 0;
-            if (trait_of    (par) != &dns_res_t) return 0;
-            if (dns_res_type(par) != 5)          return 0;
+        (dns_res par)                                {
+            if (!par)                        return 0; res* par_res = list_get(par);
+            if (!par_res)                    return 0;
+            if (trait_of(par_res) != &res_t) return 0;
+            if (dns_res_type(par) != 5)      return 0;
 
-            dns_name *ret     = make(&dns_name_t) from(0);
-            dns_res  *ret_res = par;
-            
-            if (!ret)                                             return false_t;
-            if (!dns_name_from_ptr(ret, ret_res->form.data, ret_res->dns->ptr)) {
-                del      (ret);
-                return false_t;
-            }
+            name *ret_name = make(&name_t) from (2, par_res->dns, par_res->form.data);
+            if  (!ret_name) return 0;
 
+            str*   ret = name_as_str(ret_name); del(ret_name);
             return ret;
 }
 
-str*
-    dns_res_as_cname_str
-        (obj* par)                                       {
+dns_res 
+    dns_res_a
+        (obj* par, dns_req par_req, u32_t par_ttl, v4* par_a) {
             if (!par)                            return 0;
-            if (trait_of(par)     != &dns_res_t) return 0;
-            if (dns_res_type(par) != 5)          return 0;
+            if (!par_req)                        return 0;
+            if (!par_a)                          return 0;
+            if (trait_of(par)         != dns_t)  return 0; req* req = list_get(par_req);
+            if (trait_of(req)         != &req_t) return 0;
+            if (dns_req_type(par_req) != 1)      return 0;
 
-            obj* ret_name = dns_res_as_cname(par);
-            if (!ret_name) return 0;
+            u32_t ret_addr = be32(v4_addr(par_a));
+            res*  ret      = make (&res_t) from  (
+                7        ,
+                par      ,
+                req      ,
+                1        ,
+                1        ,
+                par_ttl  ,
+                4        ,
+                &ret_addr
+            );
 
-            str* ret = dns_name_to_str(ret_name);
-            del (ret_name);
+            if(!ret)    {
+                del(ret);
+                return 0;
+            }
 
-            return ret;
+            return list_push_back(&((dns*)par)->res, ret);
+}
+
+dns_res 
+    dns_res_cname
+        (obj* par, dns_req par_req, u32_t par_ttl, str* par_cname) {
+            if (!par)                            return 0;
+            if (!par_req)                        return 0;
+            if (!par_cname)                      return 0;
+            if (trait_of(par)         != dns_t)  return 0; req* req = list_get(par_req);
+            if (trait_of(req)         != &req_t) return 0;
+            if (dns_req_type(par_req) != 5)      return 0;
+
+            name *ret_name = make (&name_t) from (1, par_cname); if (!ret_name) return 0;
+            res  *ret      = make (&res_t)  from (
+                7                 ,
+                par               ,
+                req               ,
+                5                 ,
+                1                 ,
+                par_ttl           ,
+                name_len(ret_name),
+                name_ptr(ret_name)
+            );
+
+            if (!ret)        {
+                del(ret_name);
+                del(ret)     ;
+                return      0;
+            }
+
+            del(ret_name);
+            return list_push_back(&((dns*)par)->res, ret);
 }

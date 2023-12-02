@@ -6,7 +6,6 @@ target_link_libraries(example-query-query PRIVATE
     build 
     build-arch
     build-arch-asm
-    build-preset 
 
     ws2_32
     Mswsock

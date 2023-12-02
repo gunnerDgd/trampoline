@@ -3,28 +3,33 @@
 
 #include "name.h"
 
-typedef struct dns_res_form {
-    ptr name      ,
-        type      ,
-        cls       ,
-        ttl       ,
-        data_len  ,
-        data      ;
-}   dns_res_form  ;
+typedef struct res_form {
+    u8_t  *name    ;
+    u16_t *type    ,
+          *cls     ;
+    u32_t *ttl     ;
+    u16_t *data_len;
+    u8_t  *data    ;
+}   res_form       ;
 
-extern obj_trait dns_res_t;
-typedef struct   dns_res  {
+extern obj_trait res_t;
+typedef struct   res  {
     obj          head;
     struct dns  *dns ;
-    ptr          ptr ;
-    dns_res_form form;
-}   dns_res          ;
+    res_form     form;
+}   res;
 
-bool_t dns_res_do_init_from      (dns_res*)                ;
-bool_t dns_res_do_init_from_param(dns_res*, va_list)       ;
-bool_t dns_res_init              (dns_res*, u32_t, va_list);
-bool_t dns_res_init_as_clone     (dns_res*, dns_res*)      ;
-void   dns_res_deinit            (dns_res*)                ;
-u64_t  dns_res_size              ()                        ;
+bool_t res_new_from    (res*)                                   ;
+bool_t res_new_from_par(res*, u16_t, u16_t, u32_t, u16_t, u8_t*);
+bool_t res_new         (res*, u32_t, va_list)                   ;
+bool_t res_clone       (res*, res*)                             ;
+void   res_del         (res*)                                   ;
+
+name*  res_req         (res*);
+u16_t  res_type        (res*);
+u16_t  res_cls         (res*);
+u32_t  res_ttl         (res*);
+u16_t  res_data_len    (res*);
+
 
 #endif
