@@ -42,9 +42,6 @@ add_library(trampoline STATIC
     head.h
     head.c
 
-    name.h
-    name.c
-
     req.h
     req.c
 
