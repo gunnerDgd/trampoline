@@ -12,7 +12,7 @@ typedef struct req_form {
 extern obj_trait req_t;
 typedef struct   req  {
     obj          head;
-    struct dns  *dns ;
+    struct pkt  *pkt ;
     req_form     form;
 }   req;
 

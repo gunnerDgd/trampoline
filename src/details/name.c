@@ -1,7 +1,8 @@
 #include "name.h"
+
 #include "res.h"
 #include "req.h"
-#include "dns.h"
+#include "pkt.h"
 
 #include "endian.h"
 
@@ -19,7 +20,7 @@ bool_t
             if (!make_at(&par_name->name, str_t) from(0)) return false_t;
             if (par_count == 1)                           return name_new_from_str(par_name, va_arg(par, str*));
             if (par_count == 2)                       {
-                dns  *par_pkt     = va_arg(par, dns*) ;
+                pkt  *par_pkt     = va_arg(par, pkt*) ;
                 u8_t *par_pkt_ptr = va_arg(par, u8_t*);
 
                 if (!par_pkt)                                              return false_t;
@@ -54,7 +55,14 @@ bool_t
             u64_t tok = 0, tok_pos = str_find_cstr(par_str, tok, ".", 1),
                   len = 0;
             
-            if    (tok_pos == -1) return false_t;
+            if (tok_pos == -1)                         {
+                len = str_len(par_str)                 ; if (len >= 64) return false_t;
+                str_push_back_cstr(&par->name, &len, 1);
+                str_push_back     (&par->name, par_str);
+                str_push_back_cstr(&par->name, "\0", 1);
+
+                return true_t;
+            }
             while (tok_pos != -1)                             {
                 len = tok_pos - tok                           ;
                 str_push_back_cstr(&par->name, &len     , 1)  ;
@@ -67,17 +75,19 @@ bool_t
             len = str_len(par_str) - tok                  ;
             str_push_back_cstr(&par->name, &len     , 1)  ;
             str_push_back_cstr(&par->name, str + tok, len);
-            str_push_back_cstr(&par->name, "\0"     , 1)  ;
+ 
+            if(!str_ends_cstr(&par->name, "\0", 1))
+                str_push_back_cstr(&par->name, "\0", 1);
             return true_t;
 }
 
 bool_t
     name_new_from_pkt
-        (name* par, struct dns* par_pkt, u8_t* par_ptr) {
+        (name* par, struct pkt* par_pkt, u8_t* par_ptr) {
             u8_t  len;
             u16_t off;
 
-            if (par_ptr < par_pkt->ptr)                            return false_t;
+            if (par_ptr <  par_pkt->ptr)                           return false_t;
             if (par_ptr > (par_pkt->ptr + box_size(par_pkt->box))) return false_t;
 
             len = *par_ptr;
@@ -113,8 +123,8 @@ str*
                 str_push_back_cstr(ret, ptr, len); ptr += len;
                 str_push_back_cstr(ret, "." , 1) ;
             }
-            str_pop_back      (ret, 1)      ;
-            str_push_back_cstr(ret, "\0", 1);
+
+            str_pop_back(ret, 1);
             return ret;
 }
 

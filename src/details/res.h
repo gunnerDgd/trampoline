@@ -15,7 +15,7 @@ typedef struct res_form {
 extern obj_trait res_t;
 typedef struct   res  {
     obj          head;
-    struct dns  *dns ;
+    struct pkt  *pkt ;
     res_form     form;
 }   res;
 

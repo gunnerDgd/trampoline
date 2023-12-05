@@ -1,5 +1,5 @@
 #include "head.h"
-#include "dns.h"
+#include "pkt.h"
 
 #include "endian.h"
 
@@ -14,11 +14,11 @@ obj_trait head_t         = {
 bool_t 
     head_new
         (head* par_head, u32_t par_count, va_list par)                              {
-            par_head->dns  = va_arg(par, dns*) ; if (!par_head->dns)  return false_t;
-            par_head->form = par_head->dns->ptr; if (!par_head->form) return false_t;
+            par_head->pkt  = va_arg(par, pkt*) ; if (!par_head->pkt)  return false_t;
+            par_head->form = par_head->pkt->ptr; if (!par_head->form) return false_t;
 
             if (par_count == 1)             {
-                par_head->dns->ptr_off += 12;
+                par_head->pkt->ptr_off += 12;
                 return true_t;
             }
 
@@ -28,7 +28,7 @@ bool_t
             par_head->form->res        =                        0;
             par_head->form->auth       =                        0;
             par_head->form->additional =                        0;
-            par_head->dns->ptr_off    +=                       12;
+            par_head->pkt->ptr_off    +=                       12;
 
             return true_t;
 }

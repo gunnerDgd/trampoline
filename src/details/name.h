@@ -13,7 +13,7 @@ typedef struct   name  {
 
 bool_t      name_new         (name*, u32_t, va_list)    ;
 bool_t      name_new_from_str(name*, str*)              ;
-bool_t      name_new_from_pkt(name*, struct dns*, u8_t*);
+bool_t      name_new_from_pkt(name*, struct pkt*, u8_t*);
 bool_t      name_clone       (name*, name*)             ;
 void        name_del         (name*)                    ;
 u64_t       name_len         (name*)                    ;

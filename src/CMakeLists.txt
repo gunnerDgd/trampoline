@@ -12,8 +12,29 @@ add_library(trampoline STATIC
     details/res.h
     details/res.c
 
-    details/dns.h
-    details/dns.c
+    details/pkt.h
+    details/pkt.c
+
+    details/rslv.h
+    details/rslv.c
+
+    details/rslv_task.h
+    details/rslv_task.c
+
+    details/cli.h
+    details/cli.c
+
+    details/soa.h
+    details/soa.c
+
+    details/zone.h
+    details/zone.c
+
+    details/rec.h
+    details/rec.c
+
+    details/ns.h
+    details/ns.c
 
     head.h
     head.c
@@ -27,6 +48,24 @@ add_library(trampoline STATIC
     res.h
     res.c
 
-    dns.h
-    dns.c
+    pkt.h
+    pkt.c
+
+    rslv.h
+    rslv.c
+
+    zone.h
+    zone.c
+
+    rec.h
+    rec.c
+
+    ns.h
+    ns.c
+
+    cli.h
+    cli.c
+
+    soa.h
+    soa.c
 )

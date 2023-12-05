@@ -16,7 +16,7 @@ typedef struct head_form {
 extern obj_trait head_t;
 typedef struct   head  {
     obj          head;
-    struct dns  *dns ;
+    struct pkt  *pkt ;
     head_form   *form;
 }   head;
 

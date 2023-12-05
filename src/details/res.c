@@ -1,6 +1,6 @@
 #include "res.h"
 #include "req.h"
-#include "dns.h"
+#include "pkt.h"
 
 #include "endian.h"
 
@@ -15,22 +15,22 @@ obj_trait res_t         = {
 bool_t 
     res_new_from
         (res* par)                            {
-            par->form.name = par->dns->ptr_off;
-            u8_t  *ptr     = par->dns->ptr_off;
+            par->form.name = par->pkt->ptr_off;
+            u8_t  *ptr     = par->pkt->ptr_off;
             while(*ptr)            {
                 if ((*ptr) & 0xC0) { ptr += 1; break; }
-                if ((*ptr + par->dns->ptr_off) > (par->dns->ptr + box_size(par->dns->box)))
+                if ((*ptr + par->pkt->ptr_off) > (par->pkt->ptr + box_size(par->pkt->box)))
                     return false_t;
 
                 ptr += ((*ptr) + 1);
             }
 
-            par->form.type     = ptr                + 1            ;
-            par->form.cls      = par->form.type     + 1            ;
-            par->form.ttl      = par->form.cls      + 1            ;
-            par->form.data_len = par->form.ttl      + 1            ;
-            par->form.data     = par->form.data_len + 1            ;
-            par->dns->ptr_off  = par->form.data + res_data_len(par);
+            par->form.type     = ptr                +                 1;
+            par->form.cls      = par->form.type     +                 1;
+            par->form.ttl      = par->form.cls      +                 1;
+            par->form.data_len = par->form.ttl      +                 1;
+            par->form.data     = par->form.data_len +                 1;
+            par->pkt->ptr_off  = par->form.data     + res_data_len(par);
             
             return true_t;
 }
@@ -44,20 +44,18 @@ bool_t
             *par->form.data_len = be16(par_len) ; par->form.data     = par->form.data_len + 1;
 
             mem_copy(par->form.data, par_data, par_len);
-            par->dns->ptr_off            = (par->form.data + par_len)             ;
-            par->dns->dns_head.form->res = be16(head_res(&par->dns->dns_head) + 1);
-
+            par->pkt->ptr_off              = (par->form.data + par_len);
             return true_t;
 }
 
 bool_t 
     res_new
         (res* par_res, u32_t par_count, va_list par)  {
-            par_res->dns       = va_arg(par, dns*)    ; if(!par_res->dns) return false_t;
-            par_res->form.name = par_res->dns->ptr_off;
+            par_res->pkt       = va_arg(par, pkt*)    ; if(!par_res->pkt) return false_t;
+            par_res->form.name = par_res->pkt->ptr_off;
 
             if (par_count == 1) return res_new_from(par_res);
-            if (par_count == 7)                    {
+            if (par_count == 7)                             {
                 obj*  par_obj  = va_arg(par, obj*) ;
                 u16_t par_type = va_arg(par, u16_t);
                 u16_t par_cls  = va_arg(par, u16_t);
@@ -67,19 +65,19 @@ bool_t
 
                 u16_t name;
                 if       (trait_of(par_obj) == &req_t) {
-                    req* req = par_obj;
-                    if  (req->dns != par_res->dns)
+                    req* req = par_obj; 
+                    if  (req->pkt != par_res->pkt)
                         return false_t;
 
-                    name = be16(0xC000 | (req->form.name - par_res->dns->ptr));
+                    name = be16(0xC000 | (req->form.name - par_res->pkt->ptr));
                 }
 
                 else if  (trait_of(par_obj) == &res_t) {
                     res* res = par_obj;
-                    if  (res->dns != par_res->dns) 
+                    if  (res->pkt != par_res->pkt)
                         return false_t;
 
-                    name = be16(0xC000 | (res->form.data - par_res->dns->ptr));
+                    name = be16(0xC000 | (res->form.data - par_res->pkt->ptr));
                 }
                 else return false_t;
 
@@ -98,9 +96,9 @@ bool_t
 }
 
 bool_t res_clone(res* par, res* par_clone) { return false_t; }
-void   res_del  (res* par)                 {}
+void   res_del  (res* par)                 {  }
 
-name*  res_req     (res* par) { return make(&name_t) from (2, par->dns, par->form.name); }
+name*  res_req     (res* par) { return make(&name_t) from (2, par->pkt, par->form.name); }
 u16_t  res_type    (res* par) { return be16(*par->form.type)    ; }
 u16_t  res_cls     (res* par) { return be16(*par->form.cls)     ; }
 u32_t  res_ttl     (res* par) { return be32(*par->form.ttl)     ; }
