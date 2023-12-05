@@ -92,7 +92,6 @@ str*
             if (!par)                        return 0; res* par_res = list_get(par);
             if (!par_res)                    return 0;
             if (trait_of(par_res) != &res_t) return 0;
-            if (dns_res_type(par) != 1)      return 0;
 
             str *ret = make(str_t) from (0);
             if (!ret) return 0;
@@ -116,7 +115,6 @@ str*
             if (!par)                        return 0; res* par_res = list_get(par);
             if (!par_res)                    return 0;
             if (trait_of(par_res) != &res_t) return 0;
-            if (dns_res_type(par) != 5)      return 0;
 
             name *ret_name = make(&name_t) from (2, par_res->pkt, par_res->form.data);
             if  (!ret_name) return 0;
@@ -131,7 +129,6 @@ str*
             if (!par)                        return 0; res* par_res = list_get(par);
             if (!par_res)                    return 0;
             if (trait_of(par_res) != &res_t) return 0;
-            if (dns_res_type(par) != 12)     return 0;
 
             name *ret_name = make(&name_t) from (2, par_res->pkt, par_res->form.data);
             if  (!ret_name) return 0;
@@ -146,7 +143,6 @@ dns_soa
             if (!par)                        return 0; res* par_res = list_get(par);
             if (!par_res)                    return 0;
             if (trait_of(par_res) != &res_t) return 0;
-            if (dns_res_type(par) != 6)      return 0;
 
             return make (&soa_t) from (1, par_res);
 }
@@ -159,7 +155,6 @@ dns_res
             if (!par_a)                              return 0;
             if (trait_of(par)         != dns_pkt_t)  return 0; req* req = list_get(par_req);
             if (trait_of(req)         != &req_t)     return 0;
-            if (dns_req_type(par_req) != 1)          return 0;
 
             u32_t ret_res_addr = be32(v4_addr(par_a));
             res*  ret_res      = make (&res_t) from  (
