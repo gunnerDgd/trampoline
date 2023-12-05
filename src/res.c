@@ -151,24 +151,6 @@ dns_soa
             return make (&soa_t) from (1, par_res);
 }
 
-void 
-    dns_res_rec
-        (dns_pkt par, dns_req par_req, dns_rec par_rec) {
-            if (!par)                        return;
-            if (!par_req)                    return;
-            if (!par_rec)                    return;
-            if (trait_of(par) != dns_pkt_t)  return;
-
-            dns_rdata rdata = dns_rec_data(par_rec);
-            for   ( ; rdata ; rdata = dns_rdata_next(rdata)) {
-                switch (dns_rdata_type(rdata))             {
-                    case 1 : dns_res_a    (par, par_req, dns_rdata_ttl(rdata), dns_rdata_as_a    (rdata)); break;
-                    case 5 : dns_res_cname(par, par_req, dns_rdata_ttl(rdata), dns_rdata_as_cname(rdata)); break;
-                    case 12: dns_res_ptr  (par, par_req, dns_rdata_ttl(rdata), dns_rdata_as_ptr  (rdata)); break;
-                }
-            }
-}
-
 dns_res 
     dns_res_a
         (dns_pkt par, dns_req par_req, u32_t par_ttl, v4* par_a) {

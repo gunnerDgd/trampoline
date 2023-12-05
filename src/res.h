@@ -26,7 +26,6 @@ str*    dns_res_as_cname       (dns_res);
 str*    dns_res_as_ptr         (dns_res);
 dns_soa dns_res_as_soa         (dns_res);
 
-void    dns_res_rec            (dns_pkt, dns_req, dns_rec)           ;
 dns_res dns_res_a              (dns_pkt, dns_req, u32_t, v4*)        ;
 dns_res dns_res_a_str          (dns_pkt, dns_req, u32_t, str*)       ;
 dns_res dns_res_a_cstr         (dns_pkt, dns_req, u32_t, const char*);

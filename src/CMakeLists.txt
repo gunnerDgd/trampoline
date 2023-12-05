@@ -18,11 +18,14 @@ add_library(trampoline STATIC
     details/rslv.h
     details/rslv.c
 
-    details/rslv_task.h
-    details/rslv_task.c
+    details/rslv_req.h
+    details/rslv_req.c
 
     details/cli.h
     details/cli.c
+
+    details/cli_res.h
+    details/cli_res.c
 
     details/soa.h
     details/soa.c
@@ -54,6 +57,9 @@ add_library(trampoline STATIC
     rslv.h
     rslv.c
 
+    rslv_req.h
+    rslv_req.c
+
     zone.h
     zone.c
 
@@ -65,6 +71,9 @@ add_library(trampoline STATIC
 
     cli.h
     cli.c
+
+    cli_res.h
+    cli_res.c
 
     soa.h
     soa.c

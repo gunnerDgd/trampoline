@@ -19,79 +19,79 @@ void
     dns_cli_req_a     
         (dns_cli par, str* par_req)               {
             if (!par)                       return;
-            if (trait_of(par) != dns_cli_t) return; cli* cli = par;
+            if (trait_of(par) != dns_cli_t) return;
 
-            dns_req_a(cli->pkt, par_req);
+            cli_req_a(par, par_req);
 }
 
 void
     dns_cli_req_a_cstr
         (dns_cli par, const char* par_req)        { 
             if (!par)                       return;
-            if (trait_of(par) != dns_cli_t) return; cli* cli = par;
+            if (trait_of(par) != dns_cli_t) return;
 
-            dns_req_a_cstr(cli->pkt, par_req);
+            cli_req_a_cstr(par, par_req);
 }
 
 void
     dns_cli_req_cname
         (dns_cli par, str* par_req)               { 
             if (!par)                       return;
-            if (trait_of(par) != dns_cli_t) return; cli* cli = par;
+            if (trait_of(par) != dns_cli_t) return;
 
-            dns_req_cname(cli->pkt, par_req);
+            cli_req_cname(par, par_req);
 }
 
 void
     dns_cli_req_cname_cstr
         (dns_cli par, const char* par_req)        { 
             if (!par)                       return;
-            if (trait_of(par) != dns_cli_t) return; cli* cli = par;
+            if (trait_of(par) != dns_cli_t) return;
 
-            dns_req_cname_cstr(cli->pkt, par_req);
+            cli_req_cname_cstr(par, par_req);
 }
 
 void 
     dns_cli_req_ptr
-        (dns_cli par, v4* par_req)                {
+        (dns_cli par, v4* par_req)               {
             if (!par)                       return;
-            if (trait_of(par) != dns_cli_t) return; cli* cli = par;
+            if (trait_of(par) != dns_cli_t) return;
 
-            dns_req_ptr(cli->pkt, par_req);
+            cli_req_ptr(par, par_req);
 }
 
 void 
     dns_cli_req_ptr_str
         (dns_cli par, str* par_req)               {
             if (!par)                       return;
-            if (trait_of(par) != dns_cli_t) return; cli* cli = par;
+            if (trait_of(par) != dns_cli_t) return;
 
-            dns_req_ptr_str(cli->pkt, par_req);
+            cli_req_ptr_str(par, par_req);
 }
 
 void 
     dns_cli_req_ptr_cstr
         (dns_cli par, const char* par_req)        {
             if (!par)                       return;
-            if (trait_of(par) != dns_cli_t) return; cli* cli = par;
+            if (trait_of(par) != dns_cli_t) return;
 
-            dns_req_ptr_cstr(cli->pkt, par_req);
+            cli_req_ptr_cstr(par, par_req);
 }
 
 void
     dns_cli_req_soa
         (dns_cli par, str* par_req)               { 
             if (!par)                       return;
-            if (trait_of(par) != dns_cli_t) return; cli* cli = par;
+            if (trait_of(par) != dns_cli_t) return;
 
-            dns_req_soa(cli->pkt, par_req);
+            cli_req_soa(par, par_req);
 }
 
 void
     dns_cli_req_soa_cstr
         (dns_cli par, const char* par_req)        { 
             if (!par)                       return;
-            if (trait_of(par) != dns_cli_t) return; cli* cli = par;
+            if (trait_of(par) != dns_cli_t) return;
 
-            dns_req_soa_cstr(cli->pkt, par_req);
+            cli_req_soa_cstr(par, par_req);
 }

@@ -6,9 +6,10 @@
 #include <v4.h>
 
 #include "pkt.h"
+#include "soa.h"
 
-extern obj_trait* dns_cli_t;
-typedef void*     dns_cli  ;
+extern obj_trait* dns_cli_t  ;
+typedef obj*      dns_cli    ;
 
 task dns_cli_req           (dns_cli)             ;
 
